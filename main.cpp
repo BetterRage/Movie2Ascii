@@ -4,8 +4,8 @@
 
 int main()
 {
-    VideoDecoder vdec("input.mpeg");
-    vdec.init();
+    //VideoDecoder vdec("input.mpeg");
+    //vdec.init();
     AsciiVideoWindow avwindow("hey",100,100);
     avwindow.init();
     std::this_thread::sleep_for(std::chrono::seconds(3));

@@ -20,8 +20,10 @@
 
 // Constant: font8x8_basic
 // Contains an 8x8 font map for unicode points U+0000 - U+007F (basic latin)
+#define BYTES_PER_CHARACTER 8
+
 #include <array>
-std::array<std::array<unsigned char,8>,95> font8x8_basic = {{
+static const std::array<std::array<unsigned char,BYTES_PER_CHARACTER>,95> font8x8_basic = {{
     { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},   //(space)
     { 0x18, 0x3C, 0x3C, 0x18, 0x18, 0x00, 0x18, 0x00},   //(!)
     { 0x36, 0x36, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},   //(")
@@ -119,8 +121,9 @@ std::array<std::array<unsigned char,8>,95> font8x8_basic = {{
     { 0x6E, 0x3B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}    //(~)
 }};
 
+#define BRIGHTNESS_RESOLUTION 32
 //indices of font characters sorted by coloured pixels
-std::array<int,32> pxlIdx = {{
+static const std::array<int,BRIGHTNESS_RESOLUTION> pxlIdx = {{
     0 ,14,12,26,63,27,92,15,11,73,1,67,59,17,23,78,
     85,42,19,80,18,39,48,20,6,36,43,50,34,3,16,45
 }};

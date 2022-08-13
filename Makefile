@@ -1,4 +1,4 @@
-CXXFLAGS += -Wall -g -std=c++14
+CXXFLAGS += -Wall -g -std=c++14 -Wextra
 INCDIR = -I.
 LIBS = avformat avcodec avutil BetterLogger SDL2
 
