@@ -11,6 +11,7 @@ public:
     AsciiVideoWindow(std::string name,int videowidth,int videoheight);
     ~AsciiVideoWindow();
     void init();
+    SDL_Window* getSDLWindow() ;
 private:
     const int xSize = 1000;
     int ySize;
@@ -21,5 +22,4 @@ private:
     Logger mLogger{"Window",false};
 
     SDL_Window* window;
-    std::unique_ptr<AsciiRendererSDL> renderer; 
 };

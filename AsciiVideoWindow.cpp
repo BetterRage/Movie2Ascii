@@ -11,8 +11,11 @@ void AsciiVideoWindow::init()
         mName.c_str(),
         SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,xSize,ySize,
         SDL_WindowFlags::SDL_WINDOW_SHOWN);
-    renderer = std::make_unique<AsciiRendererSDL>(window);    
-    renderer->init();
+}
+
+SDL_Window* AsciiVideoWindow::getSDLWindow()
+{
+    return window;
 }
 
 AsciiVideoWindow::AsciiVideoWindow(std::string name,int videowidth,int videoheight)
@@ -20,7 +23,6 @@ AsciiVideoWindow::AsciiVideoWindow(std::string name,int videowidth,int videoheig
     mName = name;
     mVideoHeight = videoheight;
     mVideoWidth = videowidth;
-
 }
 
 AsciiVideoWindow::~AsciiVideoWindow()
