@@ -22,10 +22,10 @@ private:
     SDL_Renderer* mRenderer;
     SDL_Window* mWindow;
 
+    int videoW,videoH;
     int windowW, windowH;
     int asciiW, asciiH;
-    int videoW,videoH;
-    uint8_t* pixelData;
+    float pixelToCharRatioX, pixelToCharRatioY;
     
     SDL_Rect* charPositions = nullptr;
     std::array<SDL_Texture*,BRIGHTNESS_RESOLUTION> charTextures;
