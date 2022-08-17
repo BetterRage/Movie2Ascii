@@ -5,6 +5,14 @@
 #include <array>
 #include <functional>
 
+typedef struct size size;
+
+struct size
+{
+    int w;
+    int h;
+};
+
 class AsciiRendererSDL
 {
 public: 
@@ -12,6 +20,7 @@ public:
     ~AsciiRendererSDL();
     bool init();
     void startRendering(std::function<bool(uint8_t*)> decoder);
+    size getAsciiSize();
 
 private:
     void loadAsciiTextures();
@@ -22,9 +31,7 @@ private:
     SDL_Renderer* mRenderer;
     SDL_Window* mWindow;
 
-    int videoW,videoH;
-    int windowW, windowH;
-    int asciiW, asciiH;
+    size video, window, ascii;
     float pixelToCharRatioX, pixelToCharRatioY;
     
     SDL_Rect* charPositions = nullptr;

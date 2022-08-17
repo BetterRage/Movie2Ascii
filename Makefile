@@ -1,6 +1,6 @@
 CXXFLAGS += -Wall -g -std=c++14 -Wextra
 INCDIR = -I.
-LIBS = avformat avcodec avutil BetterLogger SDL2
+LIBS = avformat swscale avcodec avutil BetterLogger SDL2 
 
 # don't add a build-id to the final binary
 
@@ -29,7 +29,7 @@ $(PROG): $(OBJS_IN_BUILDDIR)
 $(BUILD_DIR)/%.o: %.cpp
 	@mkdir -p `dirname $@`
 	@echo "[Compiling] "$(notdir $@)
-	$(COMPILE.cc) $^ -o $@
+	$(COMPILE.cc) -o $@ $^
 
 
 .PRECIOUS: $(DEPDIR)/%.d

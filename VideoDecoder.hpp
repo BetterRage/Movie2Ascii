@@ -6,6 +6,7 @@ extern "C"
     #include <libavformat/avformat.h>
     #include <libswscale/swscale.h>
 }
+
 typedef struct streamInfo StreamInfo;
 struct streamInfo
 {
@@ -22,18 +23,24 @@ class VideoDecoder
 public:
     VideoDecoder(std::string in);
     ~VideoDecoder();
-    bool init();
-    bool decode(uint8_t* buffer);
     
+    bool init();
+    void setTargetFrameSize(int w, int h);
+
+    bool decode(uint8_t* buffer);
+
+
     StreamInfo getStreamInfo();
 private:
     void setStreamInfo(AVStream* stream);
     Logger mLogger{"Decoder",false};
     std::string mInpath;
 
+    int targetw = -1, targeth = -1;
     AVFrame* curr_frame;
     AVPacket* curr_packet;
     AVFormatContext* av_format_ctx;
     AVCodecContext* av_codec_ctx;
+    SwsContext* sw_context;
     StreamInfo info;
 };

@@ -5,18 +5,18 @@
 
 AsciiRendererSDL::AsciiRendererSDL(SDL_Window *window, int videoW, int videoH)
 {
-    SDL_GetWindowSize(window, &windowW, &windowH);
-    asciiW = std::ceil(windowW / 8.0f);
-    asciiH = std::ceil(windowH / 8.0f);
+    SDL_GetWindowSize(window, &this->window.w, &this->window.h);
+    ascii.w = std::ceil(this->window.w / 8.0f);
+    ascii.h = std::ceil(this->window.h / 8.0f);
 
-    pixelToCharRatioX = (float)asciiW / (float)videoW;
-    pixelToCharRatioY = (float)asciiH / (float)videoH;
+    pixelToCharRatioX = (float)ascii.w / (float)videoW;
+    pixelToCharRatioY = (float)ascii.h / (float)videoH;
 
-    this->videoH = videoH;
-    this->videoW = videoW;
+    this->video.h = videoH;
+    this->video.w = videoW;
 
     mWindow = window;
-    charPositions = (SDL_Rect *)malloc(asciiW * asciiH * sizeof(SDL_Rect));
+    charPositions = (SDL_Rect *)malloc(ascii.w * ascii.h * sizeof(SDL_Rect));
 }
 
 AsciiRendererSDL::~AsciiRendererSDL()
@@ -38,24 +38,29 @@ bool AsciiRendererSDL::init()
     loadAsciiTextures();
     loadCharCoordinates();
     SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
-    SDL_RenderClear(mRenderer);
-
-    for (int i = 0; i < asciiH * asciiW; i++)
+    for (int i = 0; i < ascii.w * ascii.h; i++)
     {
         SDL_RenderCopy(mRenderer, charTextures[i % BRIGHTNESS_RESOLUTION], NULL, charPositions + i);
     }
     SDL_RenderPresent(mRenderer);
-    // std::this_thread::sleep_for(std::chrono::seconds(10));
 }
 
 void AsciiRendererSDL::startRendering(std::function<bool(uint8_t *)> decoder)
 {
-    uint8_t *data = (uint8_t *)malloc(videoW * videoH);
-    uint8_t *asciiData = (uint8_t *)malloc(asciiW * asciiH);
+    uint8_t *data = (uint8_t *)malloc(ascii.w * ascii.h);
     while(decoder(data))
     {
-        
+        SDL_RenderClear(mRenderer);
+        for(int i=0;i<ascii.w*ascii.h;i++)
+            SDL_RenderCopy(mRenderer, charTextures[data[i]/8], NULL, charPositions + i);
+        SDL_RenderPresent(mRenderer);
+        std::this_thread::sleep_for(std::chrono::milliseconds(30));
     }
+}
+
+size AsciiRendererSDL::getAsciiSize()
+{
+    return ascii;
 }
 
 void AsciiRendererSDL::loadAsciiTextures()
@@ -83,11 +88,11 @@ void AsciiRendererSDL::loadAsciiTextures()
 
 void AsciiRendererSDL::loadCharCoordinates()
 {
-    for (int i = 0; i < (asciiH * asciiW); i++)
+    for (int i = 0; i < (ascii.h * ascii.w); i++)
     {
         charPositions[i] = {
-            .x = (i % asciiW) * 8,
-            .y = (i / asciiW) * 8,
+            .x = (i % ascii.w) * 8,
+            .y = (i / ascii.w) * 8,
             .w = 8,
             .h = BYTES_PER_CHARACTER};
     }

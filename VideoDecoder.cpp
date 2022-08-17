@@ -13,6 +13,8 @@ VideoDecoder::~VideoDecoder()
         avformat_close_input(&av_format_ctx);
     if (av_codec_ctx)
         avcodec_free_context(&av_codec_ctx);
+    if (sw_context)
+        sws_freeContext(sw_context);
     if (curr_frame)
         av_frame_free(&curr_frame);
     if (curr_packet)
@@ -64,9 +66,22 @@ bool VideoDecoder::init()
     return true;
 }
 
+void VideoDecoder::setTargetFrameSize(int w, int h)
+{
+    targetw = w;
+    targeth = h;
+} 
+
 bool VideoDecoder::decode(uint8_t *buffer)
 {
-    while (av_read_frame(av_format_ctx, curr_packet) == 0)
+    if(targeth == -1)
+    {
+        mLogger.logError("Set target frame size first");
+        return false;
+    }
+
+    int result;
+    while (av_read_frame(av_format_ctx, curr_packet) >= 0)
     {
         if (curr_packet->stream_index != info.streamIndex)
         {
@@ -75,22 +90,38 @@ bool VideoDecoder::decode(uint8_t *buffer)
         }
 
         avcodec_send_packet(av_codec_ctx, curr_packet);
+
+        //after we send packets pixel format is available so now we can create swscontext
+        if(!sw_context)
+            sw_context = sws_getContext(info.videoWidth, info.videoHeight, this->av_codec_ctx->pix_fmt,
+                                    targetw, targeth,AV_PIX_FMT_YUV420P,SWS_BILINEAR,NULL,NULL,NULL);
         av_packet_unref(curr_packet);
 
-        int result = avcodec_receive_frame(av_codec_ctx, curr_frame);
-        if(result==0){
-            memcpy(buffer, curr_frame->data[0], info.videoWidth * info.videoHeight);
+        result = avcodec_receive_frame(av_codec_ctx, curr_frame);
+
+        if(result == 0)
+        {
+            //tmp buffers
+            uint8_t data1[targetw*targeth/2];
+            uint8_t data2[targetw*targeth/2];
+            uint8_t* dstdata[4] = {buffer,data1,data2,NULL};
+            int dstlinesize[4] = {targetw,targetw/2,targetw/2,NULL};
+            if(!sw_context)
+                return false;
+            
+            sws_scale(sw_context,curr_frame->data,curr_frame->linesize,0,curr_frame->height,dstdata,dstlinesize);
+
             av_frame_unref(curr_frame);
             return true;
         }
-        else if (result == AVERROR(EOF) || result == AVERROR(EAGAIN)){
+        if (result == AVERROR(EOF) || result == AVERROR(EAGAIN))
             continue;
-        }
-        else{
-            mLogger.logError("Error while decoding frame");
-            break;
-        }
+        else if(result!=0)
+            return false;
+
+        // if received frame
     }
+    
     return false;
 }
 
