@@ -8,6 +8,7 @@
         "program": "${workspaceFolder}/dec",
         "stopAtEntry": true,
         "cwd": "${workspaceFolder}",
+        "args": ["black.mp4"],
         "environment": [],
         "externalConsole": false,
         "MIMode": "gdb",

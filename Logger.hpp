@@ -14,7 +14,7 @@ public:
 	 * @param name name of the logger (appears in messages)
 	 * @param tofile if logging to a file is required
 	 */
-	Logger(std::string name, bool tofile = true,std::string logfilepath = "");
+	Logger(std::string name, bool tofile = true, std::string logfilepath = "");
 
 	template <typename... Args>
 	void logDebug(Args... args);
@@ -32,7 +32,7 @@ private:
 	std::shared_ptr<spdlog::logger> mLogger;
 };
 
-class Sinks 
+class Sinks
 {
 public:
 	static std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> getConsoleSink();

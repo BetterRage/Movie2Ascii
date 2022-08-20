@@ -3,14 +3,13 @@
 #include <iostream>
 #include <cmath>
 
-AsciiRendererSDL::AsciiRendererSDL(SDL_Window *window, int videoW, int videoH)
+AsciiRendererSDL::AsciiRendererSDL(SDL_Window *window, int videoW, int videoH, int framerate)
 {
+    timePerFrame = 1000000.0 / framerate; // time in microseconds
+
     SDL_GetWindowSize(window, &this->window.w, &this->window.h);
     ascii.w = std::ceil(this->window.w / 8.0f);
     ascii.h = std::ceil(this->window.h / 8.0f);
-
-    pixelToCharRatioX = (float)ascii.w / (float)videoW;
-    pixelToCharRatioY = (float)ascii.h / (float)videoH;
 
     this->video.h = videoH;
     this->video.w = videoW;
@@ -38,23 +37,20 @@ bool AsciiRendererSDL::init()
     loadAsciiTextures();
     loadCharCoordinates();
     SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
-    for (int i = 0; i < ascii.w * ascii.h; i++)
-    {
-        SDL_RenderCopy(mRenderer, charTextures[i % BRIGHTNESS_RESOLUTION], NULL, charPositions + i);
-    }
-    SDL_RenderPresent(mRenderer);
+    return true;
 }
 
 void AsciiRendererSDL::startRendering(std::function<bool(uint8_t *)> decoder)
 {
     uint8_t *data = (uint8_t *)malloc(ascii.w * ascii.h);
-    while(decoder(data))
+    while (decoder(data))
     {
+        std::chrono::system_clock::time_point tp = std::chrono::system_clock::now();
         SDL_RenderClear(mRenderer);
-        for(int i=0;i<ascii.w*ascii.h;i++)
-            SDL_RenderCopy(mRenderer, charTextures[data[i]/8], NULL, charPositions + i);
+        for (int i = 0; i < ascii.w * ascii.h; i++)
+            SDL_RenderCopy(mRenderer, charTextures[data[i] / 8], NULL, charPositions + i);
         SDL_RenderPresent(mRenderer);
-        std::this_thread::sleep_for(std::chrono::milliseconds(30));
+        while(std::chrono::system_clock::now()<(tp+std::chrono::microseconds(timePerFrame)));
     }
 }
 

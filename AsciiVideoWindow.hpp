@@ -7,19 +7,19 @@
 class AsciiVideoWindow
 {
 public:
-
-    AsciiVideoWindow(std::string name,int videowidth,int videoheight);
+    AsciiVideoWindow(std::string name, int videowidth, int videoheight);
     ~AsciiVideoWindow();
     void init();
-    SDL_Window* getSDLWindow() ;
+    SDL_Window *getSDLWindow();
+
 private:
     const int xSize = 1000;
     int ySize;
     int mVideoHeight;
     int mVideoWidth;
     std::string mName;
-    
-    Logger mLogger{"Window",false};
 
-    SDL_Window* window;
+    Logger mLogger{"Window", false};
+
+    SDL_Window *window;
 };
