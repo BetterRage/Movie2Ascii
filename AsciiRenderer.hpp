@@ -3,6 +3,7 @@
 #include "Logger.hpp"
 #include "BitmapFont.hpp"
 #include <array>
+#include <atomic>
 #include <functional>
 
 typedef struct size size;
@@ -25,6 +26,9 @@ public:
 private:
     void loadAsciiTextures();
     void loadCharCoordinates();
+    void renderCharacters(uint8_t* buf);
+    void renderRun();
+    void decoderRun();
 
     Logger logger{"Renderer", false};
 
@@ -35,6 +39,19 @@ private:
 
     int timePerFrame;
 
+    
+
+    std::function<bool(uint8_t *)> decoder;
+    std::atomic_bool decoding;
+
+
+    uint8_t *data1;
+    uint8_t *data2;
+    uint8_t *currBuffer;
+    uint8_t *renderBuffer;
+
+
     SDL_Rect *charPositions = nullptr;
     std::array<SDL_Texture *, BRIGHTNESS_RESOLUTION> charTextures;
+    std::thread decode;
 };
