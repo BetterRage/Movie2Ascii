@@ -1,4 +1,4 @@
-CXXFLAGS += -Wall -g -std=c++14 -Wextra
+CXXFLAGS += -Wall -O3 -std=c++14 -Wextra
 INCDIR = -I.
 LIBS = avformat swscale avcodec avutil SDL2 
 

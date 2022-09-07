@@ -45,16 +45,45 @@ void AsciiRendererSDL::startRendering(std::function<bool(uint8_t *)> decoder)
     typedef std::chrono::high_resolution_clock clock;
     decoding = false;
     this->decoder = decoder;
-    data1 = (uint8_t *)malloc(ascii.w * ascii.h);
-    data2 = (uint8_t *)malloc(ascii.w * ascii.h);
-    // decode = std::thread(&AsciiRendererSDL::decoderRun, this);
+    uint8_t *currFrame;
+    moodycamel::BlockingReaderWriterQueue<uint8_t *> framequeue(10);
+    decode = std::thread(&AsciiRendererSDL::DecodeRun, this, &framequeue);
     auto tp = clock::now();
     while (true)
     {
-        decoder(data1);
-        renderCharacters(data1);
-        std::this_thread::sleep_for(std::chrono::milliseconds(30));
+        tp = clock::now();
+        framequeue.wait_dequeue(currFrame);
+        renderCharacters(currFrame);
+        std::this_thread::sleep_until(tp + std::chrono::microseconds(timePerFrame));
     }
+}
+
+void AsciiRendererSDL::DecodeRun(moodycamel::BlockingReaderWriterQueue<uint8_t *> *framequeue)
+{
+    std::array<uint8_t *, 10> frames;
+    for (auto &i : frames)
+    {
+        i = (uint8_t *)malloc(ascii.w * ascii.h);
+    }
+    int i = 0;
+    bool cont;
+
+    while (true)
+    {
+        cont = decoder(frames[i]);
+        if (!cont)
+            break;
+        while (!framequeue->try_enqueue(frames[i]))
+            ;
+        i++;
+        i %= 10;
+    }
+
+    for (auto &i : frames)
+    {
+        free(i);
+    }
+    exit(0);
 }
 
 size AsciiRendererSDL::getAsciiSize()

@@ -3,8 +3,8 @@
 #include "Logger.hpp"
 #include "BitmapFont.hpp"
 #include <array>
-#include <atomic>
 #include <functional>
+#include <memory>
 #include <readerwriterqueue/atomicops.h>
 #include <readerwriterqueue/readerwriterqueue.h>
 
@@ -29,8 +29,7 @@ private:
     void loadAsciiTextures();
     void loadCharCoordinates();
     void renderCharacters(uint8_t *buf);
-    void renderRun();
-    void decoderRun();
+    void DecodeRun(moodycamel::BlockingReaderWriterQueue<uint8_t *> *framequeue);
 
     Logger logger{"Renderer"};
 
@@ -51,6 +50,5 @@ private:
 
     SDL_Rect *charPositions = nullptr;
     std::array<SDL_Texture *, BRIGHTNESS_RESOLUTION> charTextures;
-    moodycamel::ReaderWriterQueue<uint8_t *> framequeue;
     std::thread decode;
 };

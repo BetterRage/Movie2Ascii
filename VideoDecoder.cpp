@@ -10,15 +10,14 @@ VideoDecoder::VideoDecoder(std::string inpath)
 VideoDecoder::~VideoDecoder()
 {
     if (av_format_ctx)
-        avformat_close_input(&av_format_ctx);
+        avformat_free_context(av_format_ctx);
     if (av_codec_ctx)
         avcodec_free_context(&av_codec_ctx);
-    if (sw_context)
-        sws_freeContext(sw_context);
     if (curr_frame)
         av_frame_free(&curr_frame);
     if (curr_packet)
         av_packet_free(&curr_packet);
+    sws_freeContext(sw_context);
 }
 
 bool VideoDecoder::init()
@@ -56,10 +55,6 @@ bool VideoDecoder::init()
             break;
         }
     }
-
-    curr_frame = av_frame_alloc();
-    curr_packet = av_packet_alloc();
-
     av_codec_ctx = avcodec_alloc_context3(avcodec);
     avcodec_parameters_to_context(av_codec_ctx, avcodecparams);
     avcodec_open2(av_codec_ctx, avcodec, NULL);
@@ -74,15 +69,17 @@ void VideoDecoder::setTargetFrameSize(int w, int h)
 
 bool VideoDecoder::decode(uint8_t *buffer)
 {
-    if (targeth == -1)
-    {
-        mLogger.logError("Set target frame size first");
-        return false;
-    }
 
+    curr_frame = av_frame_alloc();
+    curr_packet = av_packet_alloc();
     int result;
-    while (av_read_frame(av_format_ctx, curr_packet) >= 0)
+    int cont;
+    while (true)
     {
+        cont = av_read_frame(av_format_ctx, curr_packet);
+        if (cont < 0)
+            return false;
+
         if (curr_packet->stream_index != info.streamIndex)
         {
             av_packet_unref(curr_packet);
@@ -90,12 +87,12 @@ bool VideoDecoder::decode(uint8_t *buffer)
         }
 
         avcodec_send_packet(av_codec_ctx, curr_packet);
+        av_packet_unref(curr_packet);
 
         // after we send packets pixel format is available so now we can create swscontext
         if (!sw_context)
             sw_context = sws_getContext(info.videoWidth, info.videoHeight, this->av_codec_ctx->pix_fmt,
                                         targetw, targeth, AV_PIX_FMT_YUV420P, SWS_BILINEAR, NULL, NULL, NULL);
-        av_packet_unref(curr_packet);
 
         result = avcodec_receive_frame(av_codec_ctx, curr_frame);
 
@@ -106,8 +103,6 @@ bool VideoDecoder::decode(uint8_t *buffer)
             uint8_t data2[targetw * targeth / 2];
             uint8_t *dstdata[4] = {buffer, data1, data2, NULL};
             int dstlinesize[4] = {targetw, targetw / 2, targetw / 2, 0};
-            if (!sw_context)
-                return false;
 
             sws_scale(sw_context, curr_frame->data, curr_frame->linesize, 0, curr_frame->height, dstdata, dstlinesize);
 
@@ -118,11 +113,7 @@ bool VideoDecoder::decode(uint8_t *buffer)
             continue;
         else if (result != 0)
             return false;
-
-        // if received frame
     }
-
-    return false;
 }
 
 StreamInfo VideoDecoder::getStreamInfo()
