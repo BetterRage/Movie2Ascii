@@ -47,23 +47,13 @@ void AsciiRendererSDL::startRendering(std::function<bool(uint8_t *)> decoder)
     this->decoder = decoder;
     data1 = (uint8_t *)malloc(ascii.w * ascii.h);
     data2 = (uint8_t *)malloc(ascii.w * ascii.h);
-    decode = std::thread(&AsciiRendererSDL::decoderRun,this);
+    // decode = std::thread(&AsciiRendererSDL::decoderRun, this);
     auto tp = clock::now();
-    while(true)
+    while (true)
     {
-        tp = clock::now();
-        currBuffer = data1;     
-        decoding = true;
-        renderCharacters(data2);
-        while(decoding);
-        std::this_thread::sleep_until(tp+std::chrono::microseconds(timePerFrame));
-        
-        tp = clock::now();
-        currBuffer = data2;
-        decoding = true;   
+        decoder(data1);
         renderCharacters(data1);
-        while(decoding);
-        std::this_thread::sleep_until(tp+std::chrono::microseconds(timePerFrame));
+        std::this_thread::sleep_for(std::chrono::milliseconds(30));
     }
 }
 
@@ -75,7 +65,7 @@ size AsciiRendererSDL::getAsciiSize()
 void AsciiRendererSDL::loadAsciiTextures()
 {
     SDL_Surface *surface = SDL_CreateRGBSurface(0, 8, BYTES_PER_CHARACTER, 32, 0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
-    //SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0,8,BYTES_PER_CHARACTER,1,SDL_PIXELFORMAT_INDEX1LSB);
+    // SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0,8,BYTES_PER_CHARACTER,1,SDL_PIXELFORMAT_INDEX1LSB);
 
     for (int i = 0; i < BRIGHTNESS_RESOLUTION; i++)
     {
@@ -108,24 +98,10 @@ void AsciiRendererSDL::loadCharCoordinates()
     }
 }
 
-void AsciiRendererSDL::renderCharacters(uint8_t* buf)
+void AsciiRendererSDL::renderCharacters(uint8_t *buf)
 {
     SDL_RenderClear(mRenderer);
     for (int i = 0; i < ascii.w * ascii.h; i++)
         SDL_RenderCopy(mRenderer, charTextures[buf[i] / 8], NULL, charPositions + i);
     SDL_RenderPresent(mRenderer);
-}
-
-void AsciiRendererSDL::decoderRun()
-{
-    while(true)
-    {
-        while(!decoding);
-        if(!decoder(currBuffer))
-        {
-            decoding = false;
-            return;
-        }
-        decoding = false;
-    }
 }

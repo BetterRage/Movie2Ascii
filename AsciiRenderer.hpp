@@ -5,6 +5,8 @@
 #include <array>
 #include <atomic>
 #include <functional>
+#include <readerwriterqueue/atomicops.h>
+#include <readerwriterqueue/readerwriterqueue.h>
 
 typedef struct size size;
 
@@ -26,11 +28,11 @@ public:
 private:
     void loadAsciiTextures();
     void loadCharCoordinates();
-    void renderCharacters(uint8_t* buf);
+    void renderCharacters(uint8_t *buf);
     void renderRun();
     void decoderRun();
 
-    Logger logger{"Renderer", false};
+    Logger logger{"Renderer"};
 
     SDL_Renderer *mRenderer;
     SDL_Window *mWindow;
@@ -39,19 +41,16 @@ private:
 
     int timePerFrame;
 
-    
-
     std::function<bool(uint8_t *)> decoder;
     std::atomic_bool decoding;
-
 
     uint8_t *data1;
     uint8_t *data2;
     uint8_t *currBuffer;
     uint8_t *renderBuffer;
 
-
     SDL_Rect *charPositions = nullptr;
     std::array<SDL_Texture *, BRIGHTNESS_RESOLUTION> charTextures;
+    moodycamel::ReaderWriterQueue<uint8_t *> framequeue;
     std::thread decode;
 };

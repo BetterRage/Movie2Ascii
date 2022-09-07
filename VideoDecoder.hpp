@@ -33,7 +33,7 @@ public:
 
 private:
     void setStreamInfo(AVStream *stream);
-    Logger mLogger{"Decoder", false};
+    Logger mLogger{"Decoder"};
     std::string mInpath;
 
     int targetw = -1, targeth = -1;

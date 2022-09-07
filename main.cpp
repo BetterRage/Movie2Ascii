@@ -18,8 +18,8 @@ int main(int argc, char **argv)
     size asciisiize = renderer.getAsciiSize();
     vdec.setTargetFrameSize(asciisiize.w, asciisiize.h);
 
+    avwindow.pollEvents();
     renderer.startRendering(std::bind(&VideoDecoder::decode, &vdec, std::placeholders::_1));
 
-    std::this_thread::sleep_for(std::chrono::seconds(3));
     return 0;
 }

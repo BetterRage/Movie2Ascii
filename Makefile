@@ -1,6 +1,6 @@
 CXXFLAGS += -Wall -g -std=c++14 -Wextra
 INCDIR = -I.
-LIBS = avformat swscale avcodec avutil BetterLogger SDL2 
+LIBS = avformat swscale avcodec avutil SDL2 
 
 # don't add a build-id to the final binary
 

@@ -25,6 +25,34 @@ AsciiVideoWindow::AsciiVideoWindow(std::string name, int videowidth, int videohe
     mVideoWidth = videowidth;
 }
 
+void AsciiVideoWindow::pollEvents()
+{
+    eventListener = std::thread([]
+                                {
+        while(true)
+        {
+            SDL_Event event;
+            if(SDL_PollEvent(&event)==1)
+            {
+                switch (event.type)
+                {
+                case SDL_WINDOWEVENT:
+                    switch (event.window.event)
+                    {
+                    case SDL_WINDOWEVENT_CLOSE:
+                        exit(0);
+                        break;
+                    break;
+                
+                default:
+                    break;
+                }
+                }
+            }
+
+        } });
+}
+
 AsciiVideoWindow::~AsciiVideoWindow()
 {
     SDL_DestroyWindow(window);

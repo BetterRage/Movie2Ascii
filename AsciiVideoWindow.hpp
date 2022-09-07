@@ -11,6 +11,7 @@ public:
     ~AsciiVideoWindow();
     void init();
     SDL_Window *getSDLWindow();
+    void pollEvents();
 
 private:
     const int xSize = 1000;
@@ -19,7 +20,7 @@ private:
     int mVideoWidth;
     std::string mName;
 
-    Logger mLogger{"Window", false};
-
+    Logger mLogger{"Window"};
+    std::thread eventListener;
     SDL_Window *window;
 };
