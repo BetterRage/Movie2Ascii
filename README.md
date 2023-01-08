@@ -13,7 +13,7 @@
 
 
 
-Dependencies:
+Dependencies: <br />
 -ffmpeg <br />
 -SDL <br />
 -spdlog <br />
